@@ -1,0 +1,11 @@
+# Build output
+dist/
+
+# Files owned by Corsair (see THIRD_PARTY_NOTICES.md): kept locally to build, never committed
+src/libs/
+
+# Misc
+.DS_Store
+Thumbs.db
+node_modules/
+*.tmp

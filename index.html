@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Beosound 9000</title>
+		<link rel="icon" type="image/svg+xml" href="resources/beosound.svg">
+
+		<script type="text/javascript" src="libs/MediaViewer.js"></script>
+		<link rel="stylesheet" href="libs/MediaViewer.css">
+
+		<meta
+			name="x-icue-property"
+			content="textColor"
+			data-label="tr('Text Color')"
+			data-type="color"
+			data-default="'#ffffff'"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="backgroundColor"
+			data-label="tr('Background')"
+			data-type="color"
+			data-default="'#ebeae6'"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="backgroundMedia"
+			data-label="tr('Image')"
+			data-type="media-selector"
+			data-filters="['*.webm', '*.mp4', '*.mkv', '*.gif', '*.png', '*.jpg', '*.jpeg', '*.bmp', '*.ico']"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="backgroundOpacity"
+			data-label="tr('Background Opacity')"
+			data-type="slider"
+			data-default="100"
+			data-min="0"
+			data-max="100"
+			data-step="1"
+			data-unit-label="'%'"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="idleCover"
+			data-label="tr('Idle Cover')"
+			data-type="media-selector"
+			data-filters="['*.png', '*.jpg', '*.jpeg', '*.gif', '*.bmp', '*.ico']"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="finish"
+			data-label="tr('Finish')"
+			data-type="combobox"
+			data-default="'silver'"
+			data-values="[{key: 'silver', value: tr('Silver')}, {key: 'anthracite', value: tr('Anthracite')}, {key: 'black', value: tr('Black')}]"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="glowColor"
+			data-label="tr('Glow Color')"
+			data-type="combobox"
+			data-default="'amber'"
+			data-values="[{key: 'amber', value: tr('Amber')}, {key: 'cover', value: tr('Cover Artwork')}]"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="discSpeed"
+			data-label="tr('Disc Speed')"
+			data-type="slider"
+			data-default="150"
+			data-min="30"
+			data-max="400"
+			data-step="10"
+			data-unit-label="'rpm'"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="showSpectrum"
+			data-label="tr('Show Spectrum')"
+			data-type="switch"
+			data-default="true"
+		>
+
+		<meta
+			name="x-icue-property"
+			content="spectrumOpacity"
+			data-label="tr('Spectrum Opacity')"
+			data-type="slider"
+			data-default="100"
+			data-min="10"
+			data-max="100"
+			data-step="1"
+			data-unit-label="'%'"
+		>
+
+		<script type="application/json" id="x-icue-groups">
+		[
+			{
+				"title": "tr('Media Personalization')",
+				"properties": ["textColor", "backgroundColor", "backgroundMedia", "backgroundOpacity", "idleCover"]
+			},
+			{
+				"title": "tr('Appearance')",
+				"properties": ["finish", "glowColor", "discSpeed"]
+			},
+			{
+				"title": "tr('Spectrum')",
+				"properties": ["showSpectrum", "spectrumOpacity"]
+			}
+		]
+		</script>
+		<script src="libs/IcueWidgetApiWrapper.js"></script>
+		<script src="libs/SimpleMediaApiWrapper.js"></script>
+
+		<style>
+		@font-face {
+			font-family: OpenSansRegular;
+			src: url("qrc:/fonts/OpenSans-Regular.ttf");
+			font-weight: 400;
+		}
+
+		@font-face {
+			font-family: OpenSansSemiBold;
+			src: url("qrc:/fonts/OpenSans-SemiBold.ttf");
+			font-weight: 700;
+		}
+
+		/* ------------------------------------------------------------------
+		   Mise en page dessinée sur une grille de 355 x 100 « u »
+		   (Xeneon Edge : 2560 x 720 px, soit u = 7,2 px).
+		   Reprise de la photo du Beosound 9000, tournée à l'horizontale :
+		   verre argenté avec bouton + disques, bandeau de verre noir avec LED,
+		   panneau strié anthracite.
+		   ------------------------------------------------------------------ */
+		:root {
+			--u: min(1vh, 0.28125vw);
+			--text-color: #ffffff;
+			--background-color: #ebeae6;
+			--accent: rgb(255, 128, 56);
+			--accent-rgb: 255, 128, 56;
+			--font: "Helvetica Neue", Helvetica, Arial, OpenSansRegular, sans-serif;
+			--ease: cubic-bezier(0.22, 1, 0.36, 1);
+			--knob-rot: 0deg;
+			--brush: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='300'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.003 0.9' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0 0 0 0 1'/><feComponentTransfer><feFuncR type='linear' slope='2.6' intercept='-0.8'/><feFuncG type='linear' slope='2.6' intercept='-0.8'/><feFuncB type='linear' slope='2.6' intercept='-0.8'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+
+			/* Verre argenté (défaut) */
+			--glass-1: #d8d9db;
+			--glass-2: #c4c5c8;
+			--glass-edge: #e9eaec;
+			--plate-1: #e4e5e7;
+			--plate-2: #d2d3d6;
+			--bowl-rim: rgba(255, 255, 255, 0.06);
+			--engrave: rgba(40, 42, 46, 0.62);
+			--engrave-hl: rgba(255, 255, 255, 0.65);
+			--grain: 0.75;
+		}
+
+		body[data-finish="anthracite"] {
+			--glass-1: #64676c;
+			--glass-2: #4b4e53;
+			--glass-edge: #74777d;
+			--plate-1: #75787e;
+			--plate-2: #5d6065;
+			--bowl-rim: rgba(255, 255, 255, 0.10);
+			--engrave: rgba(238, 240, 243, 0.62);
+			--engrave-hl: rgba(0, 0, 0, 0.45);
+			--grain: 0.55;
+		}
+
+		body[data-finish="black"] {
+			--glass-1: #232426;
+			--glass-2: #161719;
+			--glass-edge: #36383c;
+			--plate-1: #2f3134;
+			--plate-2: #202224;
+			--bowl-rim: rgba(255, 255, 255, 0.14);
+			--engrave: rgba(238, 240, 243, 0.5);
+			--engrave-hl: rgba(0, 0, 0, 0.6);
+			--grain: 0.45;
+		}
+
+		* { box-sizing: border-box; }
+
+		html { background: transparent; }
+
+		body {
+			margin: 0;
+			height: 100vh;
+			width: 100vw;
+			font-family: var(--font);
+			overflow: hidden;
+			background: transparent;
+		}
+
+		/* ---------- Fond (couleur / image / vidéo choisis dans iCUE) ---------- */
+		.widget-background {
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: var(--background-color);
+			position: absolute;
+			overflow: hidden;
+			opacity: var(--bg-opacity, 1);
+			z-index: -2;
+		}
+
+		#media-background {
+			width: 100%;
+			height: 100%;
+			position: relative;
+		}
+
+		/* ---------- Appareil ---------- */
+		#unit {
+			position: absolute;
+			left: calc(var(--u) * 5);
+			right: calc(var(--u) * 5);
+			top: calc(var(--u) * 4);
+			bottom: calc(var(--u) * 4);
+		}
+
+		/* Façade de verre argenté */
+		#glass {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			height: calc(var(--u) * 72);
+			border-radius: calc(var(--u) * 1.1);
+			background: linear-gradient(180deg, var(--glass-1) 0%, var(--glass-2) 100%);
+			box-shadow:
+				inset 0 0 0 calc(var(--u) * 0.45) var(--glass-edge),
+				inset 0 0 calc(var(--u) * 3) rgba(0, 0, 0, 0.06),
+				0 calc(var(--u) * 1.6) calc(var(--u) * 5) rgba(0, 0, 0, 0.20),
+				0 calc(var(--u) * 0.3) calc(var(--u) * 0.9) rgba(0, 0, 0, 0.14);
+			overflow: hidden;
+			isolation: isolate;
+		}
+
+		/* Aluminium brossé : stries fines dans le sens de la longueur */
+		#glass::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+			opacity: var(--grain);
+			mix-blend-mode: overlay;
+			background-image:
+				var(--brush),
+				repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0, rgba(255, 255, 255, 0.10) calc(var(--u) * 0.12), rgba(0, 0, 0, 0.08) calc(var(--u) * 0.12), rgba(0, 0, 0, 0.08) calc(var(--u) * 0.3));
+			background-size: 800px 300px, auto;
+		}
+
+		/* Reflet diffus sur le verre */
+		.glass-shine {
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+			background:
+				linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.04) 16%, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.10) 76%, rgba(255, 255, 255, 0) 92%),
+				linear-gradient(104deg, rgba(30, 32, 36, 0.22) 0%, rgba(30, 32, 36, 0.07) 24%, rgba(30, 32, 36, 0) 24.4%),
+				linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 40%);
+		}
+
+		/* ---------- Inscriptions gravées ---------- */
+		.brand, .model {
+			position: absolute;
+			bottom: calc(var(--u) * 21);
+			color: var(--engrave);
+			text-shadow: 0 calc(var(--u) * 0.2) 0 var(--engrave-hl);
+			white-space: nowrap;
+			user-select: none;
+			pointer-events: none;
+		}
+		.brand {
+			left: calc(var(--u) * 4);
+			font-size: calc(var(--u) * 2.1);
+			font-weight: 400;
+			letter-spacing: 0.28em;
+		}
+		.model {
+			right: calc(var(--u) * 4);
+			font-size: calc(var(--u) * 2.5);
+			font-weight: 300;
+			letter-spacing: 0.14em;
+		}
+
+		/* ---------- Rangée : bouton + six disques ---------- */
+		#row {
+			position: absolute;
+			top: calc(var(--u) * 5);
+			left: 50%;
+			transform: translateX(-50%);
+			width: calc(var(--u) * 286);
+			height: calc(var(--u) * 44);
+		}
+
+		/* Pont noir qui relie les cuvettes */
+		.chain {
+			position: absolute;
+			left: calc(var(--u) * 30.5);
+			right: calc(var(--u) * 30.5);
+			top: calc(var(--u) * 8);
+			height: calc(var(--u) * 28);
+			background: #0b0b0c;
+		}
+
+		/* Bouts noirs de la rangée */
+		.cap {
+			position: absolute;
+			top: 0;
+			width: calc(var(--u) * 8);
+			height: calc(var(--u) * 44);
+		}
+		.cap.l { left: 0; }
+		.cap.r { right: 0; }
+		.cap::before {
+			content: "";
+			position: absolute;
+			top: 50%;
+			width: calc(var(--u) * 13);
+			height: calc(var(--u) * 15);
+			margin-top: calc(var(--u) * -7.5);
+			background: #0b0b0c;
+		}
+		.cap.l::before { left: 0; border-radius: calc(var(--u) * 7.5) 0 0 calc(var(--u) * 7.5); }
+		.cap.r::before { right: 0; border-radius: 0 calc(var(--u) * 7.5) calc(var(--u) * 7.5) 0; }
+
+		/* Chaque position (disque ou chariot) se place avec --p (0 à 6) */
+		.pos {
+			position: absolute;
+			left: calc(var(--u) * 8);
+			top: 0;
+			display: block;
+			width: calc(var(--u) * 45);
+			height: calc(var(--u) * 44);
+			padding: 0;
+			margin: 0;
+			border: 0;
+			background: none;
+			transform: translateX(calc(var(--u) * 45 * var(--p, 0)));
+		}
+		/* Les glissements ne s'activent qu'après le premier affichage */
+		#row.ready .pos {
+			transition: transform 1.25s cubic-bezier(0.65, 0, 0.35, 1);
+		}
+
+		.bowl {
+			position: absolute;
+			left: calc(var(--u) * 0.5);
+			top: 0;
+			width: calc(var(--u) * 44);
+			height: calc(var(--u) * 44);
+			border-radius: 50%;
+			background: radial-gradient(circle at 50% 40%, #151517 0%, #08080a 100%);
+			box-shadow:
+				inset 0 0 0 calc(var(--u) * 0.22) var(--bowl-rim),
+				0 calc(var(--u) * 0.4) calc(var(--u) * 1.2) rgba(0, 0, 0, 0.35);
+			transition: box-shadow 0.8s var(--ease);
+		}
+
+		.pos.active .bowl {
+			box-shadow:
+				inset 0 0 0 calc(var(--u) * 0.35) rgba(var(--accent-rgb), 0.75),
+				0 0 calc(var(--u) * 3.5) rgba(var(--accent-rgb), 0.28),
+				0 calc(var(--u) * 0.4) calc(var(--u) * 1.2) rgba(0, 0, 0, 0.35);
+		}
+
+		/* ---------- Disque blanc ---------- */
+		.disc {
+			position: absolute;
+			left: calc(var(--u) * 3.5);
+			top: calc(var(--u) * 3);
+			width: calc(var(--u) * 38);
+			height: calc(var(--u) * 38);
+			border-radius: 50%;
+			transition: opacity 0.5s ease;
+		}
+
+		/* Emplacement vide : on ne voit que la cuvette noire, avec l'empreinte du disque */
+		.pos.empty .disc { opacity: 0; }
+		.pos.empty::after {
+			content: "";
+			position: absolute;
+			left: calc(var(--u) * 3.5);
+			top: calc(var(--u) * 3);
+			width: calc(var(--u) * 38);
+			height: calc(var(--u) * 38);
+			border-radius: 50%;
+			background: radial-gradient(circle, #222326 0 8%, rgba(0, 0, 0, 0) 9%);
+			box-shadow: inset 0 0 0 calc(var(--u) * 0.2) rgba(255, 255, 255, 0.07);
+			pointer-events: none;
+		}
+
+		.disc-rot {
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			overflow: hidden;
+			background-color: #f5f5f4;
+			/* Impression très discrète : permet de deviner la rotation */
+			background-image: conic-gradient(from 0deg, #f7f7f6 0deg, #ececeb 70deg, #f7f7f6 140deg, #f7f7f6 200deg, #e9e9e8 270deg, #f7f7f6 340deg);
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+			box-shadow: inset 0 0 0 calc(var(--u) * 0.25) rgba(0, 0, 0, 0.10);
+		}
+
+		/* Moyeu noir au centre */
+		.disc-rot::after {
+			content: "";
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			width: 31%;
+			aspect-ratio: 1;
+			transform: translate(-50%, -50%);
+			border-radius: 50%;
+			background: radial-gradient(circle, #050506 0 20%, #46484c 21% 30%, #0c0c0e 31% 66%, #26272a 67% 78%, rgba(255, 255, 255, 0.45) 79% 100%);
+			box-shadow: 0 0 0 calc(var(--u) * 0.2) rgba(0, 0, 0, 0.30);
+		}
+
+		/* Éclat fixe : la lumière ne tourne pas avec le disque */
+		.disc::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			pointer-events: none;
+			background: conic-gradient(from 35deg,
+				rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0.22) 24deg, rgba(255, 255, 255, 0) 56deg,
+				rgba(255, 255, 255, 0) 180deg, rgba(255, 255, 255, 0.16) 205deg, rgba(255, 255, 255, 0) 238deg);
+		}
+
+		/* La rotation du disque en cours est pilotée en JavaScript (voir « Rotation du disque ») */
+		.pos.active .disc-rot { will-change: transform; }
+
+		@keyframes spin { to { transform: rotate(360deg); } }
+
+		/* ---------- Bouton en aluminium brossé (lecture / pause) ---------- */
+		.knobpos {
+			--p: var(--carriage, 0);
+			z-index: 3;
+			cursor: pointer;
+			outline: none;
+			-webkit-tap-highlight-color: transparent;
+		}
+
+		/* Plaque en aluminium du chariot : elle suit la tête et reste visible au-dessus des disques
+		   (sous le bouton et le bras). */
+		.plate-pos {
+			--p: var(--carriage, 0);
+			z-index: 2;
+			pointer-events: none;
+		}
+		.plate-pos .plate {
+			position: absolute;
+			left: 50%;
+			margin-left: calc(var(--u) * -20);
+			top: calc(var(--u) * 22);
+			width: calc(var(--u) * 40);
+			height: calc(var(--u) * 27);
+			overflow: hidden;
+			isolation: isolate;
+			background:
+				linear-gradient(90deg, rgba(0, 0, 0, 0.10) 0%, rgba(255, 255, 255, 0.34) 22%, rgba(0, 0, 0, 0.02) 48%, rgba(255, 255, 255, 0.30) 74%, rgba(0, 0, 0, 0.10) 100%),
+				linear-gradient(180deg, var(--plate-1), var(--plate-2));
+			box-shadow:
+				0 calc(var(--u) * 0.3) calc(var(--u) * 1) rgba(0, 0, 0, 0.28),
+				inset 0 0 0 calc(var(--u) * 0.2) rgba(0, 0, 0, 0.12);
+		}
+		/* Aluminium brossé : mêmes stries que la façade, en plus marquées */
+		.plate-pos .plate::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			mix-blend-mode: overlay;
+			opacity: calc(var(--grain) * 1.25);
+			background-image:
+				var(--brush),
+				repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0, rgba(255, 255, 255, 0.22) calc(var(--u) * 0.12), rgba(0, 0, 0, 0.14) calc(var(--u) * 0.12), rgba(0, 0, 0, 0.14) calc(var(--u) * 0.3));
+			background-size: 400px 150px, auto;
+		}
+
+		.knobpos .tab {
+			position: absolute;
+			left: 50%;
+			margin-left: calc(var(--u) * -3.5);
+			top: calc(var(--u) * 41);
+			width: calc(var(--u) * 7);
+			height: calc(var(--u) * 2.6);
+			background: linear-gradient(180deg, #2c2d30, #0b0b0c);
+			border-radius: calc(var(--u) * 0.4);
+		}
+
+		/* Croissant lumineux : la lumière filtre entre le bouton et la cuvette */
+		.knobpos .lit {
+			position: absolute;
+			left: calc(var(--u) * 2.3);
+			top: calc(var(--u) * 1.8);
+			width: calc(var(--u) * 40.4);
+			height: calc(var(--u) * 40.4);
+			border-radius: 50%;
+			background:
+				linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.28) 38%, rgba(255, 255, 255, 0) 70%),
+				var(--accent);
+			box-shadow: 0 calc(var(--u) * -1.5) calc(var(--u) * 7) rgba(var(--accent-rgb), 0.55);
+			opacity: 0.3;
+			transition: opacity 0.9s var(--ease);
+		}
+		body.playing .knobpos .lit { opacity: 1; }
+		body.standby .knobpos .lit { opacity: 0.08; }
+
+		.knobpos .knob-face {
+			position: absolute;
+			left: calc(var(--u) * 5);
+			top: calc(var(--u) * 7.1);
+			width: calc(var(--u) * 35);
+			height: calc(var(--u) * 35);
+			border-radius: 50%;
+			transform: rotate(var(--knob-rot));
+			transition: transform 1.1s var(--ease);
+			box-shadow: 0 calc(var(--u) * 0.7) calc(var(--u) * 1.6) rgba(0, 0, 0, 0.5);
+		}
+		.knobpos .knob-face::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			background:
+				radial-gradient(circle, #6c6e72 0 1.4%, rgba(0, 0, 0, 0) 2.6%),
+				repeating-conic-gradient(rgba(255, 255, 255, 0.10) 0deg 1deg, rgba(0, 0, 0, 0.06) 1deg 2deg),
+				conic-gradient(from 20deg, #8d8f93, #e9eaec, #9c9ea2, #f5f6f7, #85878b, #dcdde0, #a4a6aa, #f2f3f4, #8d8f93);
+			box-shadow: inset 0 0 0 calc(var(--u) * 0.25) rgba(0, 0, 0, 0.35);
+		}
+		.knobpos:active .knob-face { filter: brightness(0.93); }
+
+		/* Tête : bouton + croissant lumineux, réunis pour pouvoir rétrécir ensemble */
+		.knobpos .head {
+			position: absolute;
+			inset: 0;
+			display: block;
+			transform-origin: calc(var(--u) * 22.5) calc(var(--u) * 22);
+			transition: transform 0.6s var(--ease) 0.7s;
+		}
+		/* Posée sur un disque : elle rétrécit sur le moyeu, comme une pince qui tient le CD */
+		.knobpos.docked .head {
+			transform: translateY(calc(var(--u) * -1.6)) scale(0.62);
+			transition: transform 0.6s var(--ease) 0s;
+		}
+		/* Posée sur un disque : plus de lueur sous la tête (le liseré orange reste autour du disque) */
+		body .knobpos.docked .lit {
+			opacity: 0 !important;
+			box-shadow: none;
+		}
+
+
+		/* ---------- Bloc noir : verre + panneau strié ---------- */
+		#block {
+			position: absolute;
+			left: calc(var(--u) * 22);
+			right: calc(var(--u) * 22);
+			top: calc(var(--u) * 54);
+			bottom: 0;
+		}
+
+		#blackglass {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			height: calc(var(--u) * 18);
+			border-radius: calc(var(--u) * 0.8) calc(var(--u) * 0.8) 0 0;
+			background: linear-gradient(180deg, #040405 0%, #0c0d0f 55%, #111214 100%);
+			box-shadow:
+				0 calc(var(--u) * -0.3) calc(var(--u) * 1.2) rgba(0, 0, 0, 0.35),
+				inset 0 calc(var(--u) * 0.25) 0 rgba(255, 255, 255, 0.07);
+			z-index: 2;
+		}
+
+		/* Reflet sur le verre noir */
+		#blackglass::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			pointer-events: none;
+			background:
+				linear-gradient(100deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 30%, rgba(255, 255, 255, 0) 30.4%),
+				linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 50%);
+		}
+
+		#ribs {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: calc(var(--u) * 18);
+			bottom: 0;
+			border-radius: 0 0 calc(var(--u) * 0.8) calc(var(--u) * 0.8);
+			background:
+				repeating-linear-gradient(180deg,
+					#3b3d42 0, #3b3d42 calc(var(--u) * 0.22),
+					#232427 calc(var(--u) * 0.22), #191a1d calc(var(--u) * 1.15),
+					#26282b calc(var(--u) * 1.9), #303236 calc(var(--u) * 2.3));
+			box-shadow:
+				inset 0 calc(var(--u) * 1.4) calc(var(--u) * 1.6) rgba(0, 0, 0, 0.55),
+				0 calc(var(--u) * 1.4) calc(var(--u) * 3.5) rgba(0, 0, 0, 0.30);
+		}
+
+		/* Joint vertical entre les deux sections du panneau */
+		#ribs::before {
+			content: "";
+			position: absolute;
+			left: 49%;
+			top: 0;
+			bottom: 0;
+			width: calc(var(--u) * 0.35);
+			background: linear-gradient(90deg, rgba(0, 0, 0, 0.75), rgba(255, 255, 255, 0.12));
+		}
+
+		/* LED : une par position (bouton + 6 disques) */
+		#leds {
+			position: absolute;
+			left: 50%;
+			bottom: calc(var(--u) * 1.7);
+			transform: translateX(-50%);
+			display: flex;
+			padding: 0 calc(var(--u) * 8);
+		}
+		.led-cell {
+			flex: none;
+			width: calc(var(--u) * 45);
+			display: flex;
+			justify-content: center;
+		}
+		.led {
+			width: calc(var(--u) * 1);
+			height: calc(var(--u) * 1);
+			border-radius: 50%;
+			background: #2b1510;
+			transition: background 0.6s var(--ease), box-shadow 0.6s var(--ease);
+		}
+		.led.has { background: #8a2f1c; box-shadow: 0 0 calc(var(--u) * 0.8) rgba(255, 70, 30, 0.45); }
+		.led.active {
+			background: var(--accent);
+			box-shadow: 0 0 calc(var(--u) * 1.8) rgba(var(--accent-rgb), 0.95), 0 0 calc(var(--u) * 0.6) rgba(255, 255, 255, 0.5);
+		}
+
+		/* ---------- Texte et commandes sur le verre noir ---------- */
+		#bg-content {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: calc(var(--u) * 4.6);
+			z-index: 1;
+			display: flex;
+			align-items: center;
+			gap: calc(var(--u) * 4);
+			padding: 0 calc(var(--u) * 5) 0 calc(var(--u) * 6);
+		}
+
+		#disp-cd {
+			flex: none;
+			display: flex;
+			align-items: baseline;
+			gap: calc(var(--u) * 1);
+			min-width: calc(var(--u) * 14);
+			color: var(--accent);
+			text-shadow: 0 0 calc(var(--u) * 1.6) rgba(var(--accent-rgb), 0.55);
+		}
+		#disp-cd span {
+			font-size: calc(var(--u) * 2.6);
+			font-weight: 400;
+			letter-spacing: 0.3em;
+			opacity: 0.85;
+		}
+		#disp-cd b {
+			font-size: calc(var(--u) * 8.4);
+			font-weight: 200;
+			line-height: 1;
+			font-variant-numeric: tabular-nums;
+		}
+
+		#disp-sep {
+			flex: none;
+			width: calc(var(--u) * 0.22);
+			height: 62%;
+			background: rgba(255, 255, 255, 0.12);
+		}
+
+		#media-info {
+			flex: 1;
+			min-width: 0;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			gap: calc(var(--u) * 0.5);
+		}
+
+		.media-text { color: var(--text-color); }
+
+		#media-title {
+			width: 100%;
+			font-size: calc(var(--u) * 6.2);
+			font-weight: 300;
+			line-height: 1.2;
+			letter-spacing: 0.02em;
+			transition: opacity 0.6s var(--ease);
+		}
+		body:not(.playing) #media-title { opacity: 0.72; }
+
+		/* Veille : l'heure et la date s'affichent en ambre sur le verre noir */
+		body.standby #media-title {
+			color: var(--accent);
+			font-size: calc(var(--u) * 6.8);
+			font-weight: 200;
+			letter-spacing: 0.08em;
+			font-variant-numeric: tabular-nums;
+			text-shadow: 0 0 calc(var(--u) * 1.6) rgba(var(--accent-rgb), 0.5);
+			opacity: 1;
+		}
+		body.standby #media-subtitle {
+			color: var(--accent);
+			opacity: 0.72;
+		}
+
+		#media-subtitle {
+			width: 100%;
+			font-size: calc(var(--u) * 3.5);
+			font-weight: 400;
+			line-height: 1.3;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			opacity: 0.58;
+		}
+
+		#disp-side {
+			flex: none;
+			display: flex;
+			align-items: center;
+			gap: calc(var(--u) * 4);
+		}
+
+		#disp-status {
+			font-size: calc(var(--u) * 2.7);
+			font-weight: 400;
+			letter-spacing: 0.32em;
+			color: var(--accent);
+			text-shadow: 0 0 calc(var(--u) * 1.3) rgba(var(--accent-rgb), 0.55);
+		}
+
+		#meter {
+			display: block;
+			width: calc(var(--u) * 36);
+			height: calc(var(--u) * 7);
+		}
+
+		/* Touches sensitives gravées dans le verre */
+		#touch {
+			flex: none;
+			display: flex;
+			align-items: center;
+			gap: calc(var(--u) * 1);
+		}
+		.touch {
+			display: grid;
+			place-items: center;
+			width: calc(var(--u) * 12);
+			height: calc(var(--u) * 12);
+			padding: 0;
+			margin: 0;
+			border: 0;
+			border-radius: 50%;
+			background: transparent;
+			color: rgba(255, 255, 255, 0.7);
+			cursor: pointer;
+			outline: none;
+			transition: color 0.15s ease, background 0.15s ease;
+			-webkit-tap-highlight-color: transparent;
+		}
+		.touch:active {
+			color: var(--accent);
+			background: rgba(255, 255, 255, 0.07);
+		}
+		.touch svg {
+			width: calc(var(--u) * 4.8);
+			height: calc(var(--u) * 4.8);
+			fill: currentColor;
+		}
+
+		/* Défilement continu quand le texte dépasse */
+		.mq {
+			display: block;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		.mq-track {
+			display: inline-flex;
+			white-space: nowrap;
+			will-change: transform;
+		}
+		.mq-track > span { flex: none; }
+		.mq-gap { width: calc(var(--u) * 10); }
+		.mq.scrolling {
+			-webkit-mask-image: linear-gradient(90deg, #000 0, #000 92%, transparent 100%);
+			mask-image: linear-gradient(90deg, #000 0, #000 92%, transparent 100%);
+		}
+		.mq.scrolling .mq-track {
+			animation: mq-scroll var(--mq-dur, 12s) linear infinite;
+		}
+		@keyframes mq-scroll {
+			0%, 14% { transform: translateX(0); }
+			100%    { transform: translateX(var(--mq-dist, 0px)); }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.knobpos .head { transition: none; }
+			.mq.scrolling .mq-track { animation: none; }
+			.knobpos .knob-face { transition: none; }
+		}
+		</style>
+	</head>
+
+	<body data-finish="silver" class="standby">
+		<div class="widget-background">
+			<div id="media-background"></div>
+		</div>
+
+		<div id="unit">
+			<div id="glass">
+				<div id="row">
+					<div class="chain"></div>
+					<div class="cap l"></div>
+					<div class="pos plate-pos"><span class="plate"></span></div>
+					<button class="pos knobpos" id="btn-play" type="button" aria-label="Play / Pause">
+						<span class="head">
+							<span class="lit"></span>
+							<span class="knob-face"></span>
+						</span>
+						<span class="tab"></span>
+					</button>
+					<div class="cap r"></div>
+				</div>
+				<div class="glass-shine"></div>
+				<div class="brand">BANG &amp; OLUFSEN</div>
+				<div class="model">BeoEdge9000</div>
+			</div>
+
+			<div id="block">
+				<div id="blackglass">
+					<div id="bg-content">
+						<div id="disp-cd"><span>CD</span><b id="cd-num">&ndash;</b></div>
+						<div id="disp-sep"></div>
+						<div id="media-info">
+							<div class="media-text mq" id="media-title"></div>
+							<div class="media-text mq" id="media-subtitle"></div>
+						</div>
+						<div id="disp-side">
+							<div id="disp-status">STANDBY</div>
+							<canvas id="meter"></canvas>
+						</div>
+						<div id="touch">
+							<button class="touch" id="btn-prev" type="button" aria-label="Previous">
+								<svg viewBox="0 0 24 24"><path d="M5 5h2.6v14H5zM20 5v14L9 12z"/></svg>
+							</button>
+							<button class="touch" id="btn-next" type="button" aria-label="Next">
+								<svg viewBox="0 0 24 24"><path d="M16.4 5H19v14h-2.6zM4 5v14l11-7z"/></svg>
+							</button>
+						</div>
+					</div>
+					<div id="leds"></div>
+				</div>
+				<div id="ribs"></div>
+			</div>
+		</div>
+
+		<script>
+		let mediaApi = null;
+
+		icueEvents = {
+			"onDataUpdated": onIcueDataUpdated,
+			"onICUEInitialized": onIcueInitialized
+		};
+
+		pluginMediadataproviderEvents = {
+			"onInitialized": onMediadataproviderInitialized
+		};
+
+		const root = document.documentElement;
+		const DEFAULT_ACCENT = [255, 128, 56];   // ambre de la photo
+		const REDUCED_MOTION = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+		let idleCoverPath = "";     // image affichée sur le disque 1 tant qu'aucun morceau n'est chargé
+		let lastThumbnail = "";
+		let lastTrackKey = null;
+		let isPlayingNow = false;
+		let spectrumVisible = true;
+		let glowFromCover = false;
+		let knobAngle = 0;
+
+		const mediaBackground = document.getElementById("media-background");
+		let mediaBackgroundComponent = { clear() {}, loadMedia() {} };
+		try {
+			mediaBackgroundComponent = new MediaViewer({
+				container: mediaBackground,
+				onMediaLoaded: (mediaElement) => {
+					console.log("Media loaded:", mediaElement.tagName);
+				},
+				onMediaError: (error) => {
+					console.error("Media error:", error);
+				}
+			});
+		} catch (e) {
+			console.warn("MediaViewer absent: fond image/video desactive");
+		}
+
+		async function onIcueInitialized() {
+			console.log("iCUE initialise");
+
+			updateMediaDisplay();
+			onIcueDataUpdated();
+		}
+
+		// ---------- Commandes média (plugin Media 1.1) ----------
+		const COMMAND_METHODS = {
+			prev: "triggerPreviousTrack",
+			playPause: "triggerPlayPause",
+			next: "triggerNextTrack"
+		};
+
+		function sendMediaCommand(command) {
+			const plugin = window.plugins && window.plugins.Mediadataprovider;
+			const method = COMMAND_METHODS[command];
+			if (plugin && typeof plugin[method] === "function") {
+				plugin[method]();
+				setTimeout(updateMediaDisplay, 400);
+			} else {
+				console.log("commande indisponible: " + method + " (plugin Media 1.1 requis)");
+			}
+		}
+
+		document.getElementById("btn-prev").addEventListener("click", () => sendMediaCommand("prev"));
+		document.getElementById("btn-play").addEventListener("click", () => sendMediaCommand("playPause"));
+		document.getElementById("btn-next").addEventListener("click", () => sendMediaCommand("next"));
+
+		// ---------- Défilement du texte ----------
+		function layoutMarquee(el) {
+			const text = el.dataset.mqText || "";
+			el.classList.remove("scrolling");
+			el.textContent = "";
+			const track = document.createElement("span");
+			track.className = "mq-track";
+			const first = document.createElement("span");
+			first.textContent = text;
+			track.appendChild(first);
+			el.appendChild(track);
+
+			const textWidth = first.getBoundingClientRect().width;
+			if (textWidth > el.clientWidth + 1) {
+				const gap = document.createElement("span");
+				gap.className = "mq-gap";
+				const second = document.createElement("span");
+				second.textContent = text;
+				track.append(gap, second);
+				const dist = textWidth + gap.getBoundingClientRect().width;
+				const speed = Math.max(30, window.innerHeight * 0.12); // px par seconde
+				el.style.setProperty("--mq-dist", -dist + "px");
+				el.style.setProperty("--mq-dur", (dist / speed / 0.86) + "s");
+				el.classList.add("scrolling");
+			}
+		}
+
+		function setMarquee(el, text) {
+			text = text || "";
+			if (el.dataset.mqText === text && el.firstElementChild) {
+				return; // même texte : ne pas relancer l'animation
+			}
+			el.dataset.mqText = text;
+			layoutMarquee(el);
+		}
+
+		function relayoutMarquees() {
+			document.querySelectorAll(".mq").forEach(function (el) {
+				if (el.dataset.mqText !== undefined) { layoutMarquee(el); }
+			});
+		}
+		window.addEventListener("resize", relayoutMarquees);
+		if (document.fonts && document.fonts.ready) {
+			document.fonts.ready.then(relayoutMarquees);
+		}
+
+		// ---------- Changeur de six disques ----------
+		// Chaque nouveau morceau est « chargé » sur le disque suivant (rotation 1 -> 6).
+		// Revenir à un morceau déjà chargé réactive simplement son disque.
+		const SLOTS = 6;
+		const slots = new Array(SLOTS).fill(null);   // { key, thumb }
+		const bayEls = [];
+		const ledEls = [];                            // [0] = LED du bouton, [1..6] = disques
+		let activeSlot = -1;
+		let nextSlot = 0;
+		let carriagePos = 0;                          // position de la tête de lecture (0 à 6)
+
+		(function buildDiscs() {
+			const row = document.getElementById("row");
+			const capRight = row.querySelector(".cap.r");
+			for (let i = 0; i < SLOTS; i++) {
+				const pos = document.createElement("div");
+				pos.className = "pos";
+				const bowl = document.createElement("span");
+				bowl.className = "bowl";
+				const disc = document.createElement("div");
+				disc.className = "disc";
+				const rot = document.createElement("div");
+				rot.className = "disc-rot";
+				disc.appendChild(rot);
+				pos.append(bowl, disc);
+				row.insertBefore(pos, capRight);
+				bayEls.push({ bay: pos, disc: disc, rot: rot });
+			}
+			const leds = document.getElementById("leds");
+			for (let k = 0; k < SLOTS; k++) {
+				const cell = document.createElement("div");
+				cell.className = "led-cell";
+				const led = document.createElement("i");
+				led.className = "led";
+				cell.appendChild(led);
+				leds.appendChild(cell);
+				ledEls.push(led);
+			}
+		})();
+
+		function renderSlot(i) {
+			const el = bayEls[i];
+			const s = slots[i];
+			let thumb = s ? s.thumb : "";
+			if (!s && i === 0 && !slots.some(Boolean) && idleCoverPath) {
+				thumb = idleCoverPath;   // image « aucun média » sur le premier disque
+			}
+			el.bay.classList.toggle("active", i === activeSlot);
+			el.bay.classList.toggle("empty", !s && !thumb);
+			el.rot.style.backgroundImage = thumb ? 'url("' + thumb + '")' : "";
+		}
+
+		// Six emplacements (0 à 5), tous utilisables : le disque i est à la position i.
+		// La tête de lecture glisse jusqu'au disque en cours, rétrécit et se pose sur son moyeu :
+		// la pochette reste visible. Sans média, elle reste où elle était ; tant qu'aucun disque
+		// n'a été lu, elle attend en grand sur l'emplacement 1.
+		let lastActive = -1;
+		function layoutPositions() {
+			if (activeSlot >= 0) { lastActive = activeSlot; }
+			carriagePos = activeSlot >= 0 ? activeSlot : (lastActive >= 0 ? lastActive : 0);
+			root.style.setProperty("--carriage", String(carriagePos));
+			document.getElementById("btn-play").classList.toggle("docked", lastActive >= 0);
+			for (let i = 0; i < SLOTS; i++) {
+				bayEls[i].bay.style.setProperty("--p", String(i));
+			}
+			// LED : une par emplacement. Celle de la tête brille, celles des disques chargés restent dimmées.
+			for (let p = 0; p < SLOTS; p++) {
+				const isHead = p === carriagePos;
+				ledEls[p].classList.toggle("active", isHead && activeSlot >= 0);
+				ledEls[p].classList.toggle("has", !isHead && !!slots[p]);
+			}
+		}
+
+		function renderAllSlots() {
+			for (let i = 0; i < SLOTS; i++) { renderSlot(i); }
+			layoutPositions();
+			updateDisplayState();
+		}
+
+		// Retourne l'index d'un disque nouvellement chargé, ou -1 s'il l'était déjà
+		function activateTrack(key) {
+			let idx = slots.findIndex(function (s) { return s && s.key === key; });
+			let loaded = -1;
+			if (idx < 0) {
+				idx = nextSlot;
+				slots[idx] = { key: key, thumb: "" };
+				nextSlot = (idx + 1) % SLOTS;
+				loaded = idx;
+			}
+			activeSlot = idx;
+			renderAllSlots();
+			return loaded;
+		}
+
+		const cdNum = document.getElementById("cd-num");
+		const statusEl = document.getElementById("disp-status");
+
+		function updateDisplayState() {
+			cdNum.textContent = activeSlot >= 0 ? String(activeSlot + 1) : "\u2013";
+			statusEl.textContent = activeSlot < 0 ? "STANDBY" : (isPlayingNow ? "PLAY" : "PAUSE");
+			document.body.classList.toggle("standby", activeSlot < 0);
+		}
+
+		function setPlaying(isPlaying) {
+			isPlayingNow = !!isPlaying;
+			document.body.classList.toggle("playing", isPlayingNow);
+			updateDisplayState();
+		}
+
+		// ---------- Horloge de veille ----------
+		// Sans média, le verre noir affiche l'heure et la date (format de la langue du système).
+		let clockTimer = null;
+
+		function renderClock() {
+			const d = new Date();
+			setMarquee(document.getElementById("media-title"),
+				d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }));
+			setMarquee(document.getElementById("media-subtitle"),
+				d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" }));
+		}
+
+		// Un seul réveil par minute, calé sur le changement de minute
+		function scheduleClockTick() {
+			const now = new Date();
+			clockTimer = setTimeout(function () {
+				renderClock();
+				scheduleClockTick();
+			}, (60 - now.getSeconds()) * 1000 - now.getMilliseconds() + 30);
+		}
+
+		function startClock() {
+			renderClock();
+			if (clockTimer === null) { scheduleClockTick(); }
+		}
+
+		function stopClock() {
+			if (clockTimer !== null) {
+				clearTimeout(clockTimer);
+				clockTimer = null;
+			}
+		}
+
+		function showNoMedia() {
+			startClock();
+			lastTrackKey = null;
+			activeSlot = -1;
+			lastThumbnail = "";
+			applyAccent(DEFAULT_ACCENT);
+			setPlaying(false);
+			renderAllSlots();
+		}
+
+		// ---------- Indicateur de niveau ----------
+		// NOTE : iCUE ne fournit pas le signal audio aux widgets. L'animation est donc
+		// générée (rythme propre à chaque morceau), synchronisée avec l'état lecture/pause,
+		// et ne correspond pas à une analyse réelle du son.
+		const BARS = 32;
+		const SEGS = 6;
+		const meter = document.getElementById("meter");
+		const mctx = meter.getContext("2d");
+		const levels = new Float32Array(BARS);
+		let bpm = 100;
+		let seed = 0;
+		let lastFrame = performance.now();
+		let curAccent = DEFAULT_ACCENT.slice();
+		let targetAccent = DEFAULT_ACCENT.slice();
+		let meterDirty = true;
+		let meterWasActive = false;
+
+		function resizeMeter() {
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			meter.width = Math.max(1, Math.round(meter.clientWidth * dpr));
+			meter.height = Math.max(1, Math.round(meter.clientHeight * dpr));
+			meterDirty = true;
+		}
+		window.addEventListener("resize", resizeMeter);
+		resizeMeter();
+
+		function hashString(str) {
+			let h = 2166136261;
+			for (let i = 0; i < str.length; i++) {
+				h ^= str.charCodeAt(i);
+				h = Math.imul(h, 16777619);
+			}
+			return h >>> 0;
+		}
+
+		function setTrackRhythm(key) {
+			const h = hashString(key || "");
+			bpm = 84 + (h % 56);          // 84 à 139 BPM
+			seed = (h % 1000) / 100;
+		}
+
+		function meterTarget(i, t) {
+			const f = i / (BARS - 1);
+			const tilt = 1 - 0.55 * Math.pow(f, 0.8);
+			const beatPhase = (t * bpm / 60) % 1;
+			const kick = Math.pow(Math.max(0, 1 - beatPhase * 2.2), 2) * Math.pow(1 - f, 1.6);
+			const n1 = Math.sin(t * (1.3 + i * 0.37) + i * 1.7 + seed) * 0.5 + 0.5;
+			const n2 = Math.sin(t * (2.9 + i * 0.11) + i * 0.6 - seed) * 0.5 + 0.5;
+			const n3 = Math.sin(t * (5.3 + i * 0.05) + i * 2.3) * 0.5 + 0.5;
+			const v = (0.32 * n1 + 0.28 * n2 + 0.12 * n3 + 0.55 * kick) * tilt;
+			return Math.min(1, v * 1.15);
+		}
+
+		function drawMeter() {
+			const W = meter.width, H = meter.height;
+			mctx.clearRect(0, 0, W, H);
+			const slotW = W / BARS;
+			const barW = slotW * 0.58;
+			const segGap = H * 0.07;
+			const segH = (H - segGap * (SEGS - 1)) / SEGS;
+			const rgb = curAccent.map(Math.round).join(",");
+			for (let i = 0; i < BARS; i++) {
+				const lit = Math.round(levels[i] * SEGS);
+				const x = i * slotW + (slotW - barW) / 2;
+				for (let s = 0; s < SEGS; s++) {
+					const y = H - (s + 1) * segH - s * segGap;
+					if (s < lit) {
+						mctx.fillStyle = (s === lit - 1 && lit > 2)
+							? "rgba(255,255,255,0.88)"
+							: "rgba(" + rgb + "," + (0.5 + 0.5 * s / SEGS).toFixed(2) + ")";
+					} else {
+						mctx.fillStyle = "rgba(255,255,255,0.07)";
+					}
+					mctx.fillRect(x, y, barW, segH);
+				}
+			}
+		}
+
+		// ---------- Rotation du disque ----------
+		// Comme sur un vrai lecteur CD : le disque prend de la vitesse au démarrage (150 tr/min par défaut,
+		// réglable ; plus lent que le vrai pour rester lisible à l'écran), et continue de tourner sur son
+		// inertie quand on met en pause ou qu'on arrête.
+		let SPIN_SPEED = 900;                         // degrés par seconde (réglage « Vitesse du disque »)
+		const discAngle = new Array(SLOTS).fill(0);
+		let spinSpeed = 0;
+		let spinSlot = -1;
+
+		function updateSpin(dt) {
+			if (activeSlot >= 0) { spinSlot = activeSlot; }
+			const target = (isPlayingNow && activeSlot >= 0 && !REDUCED_MOTION) ? SPIN_SPEED : 0;
+			const k = 1 - Math.exp(-dt * (target > spinSpeed ? 2.6 : 2.0));  // montée rapide, arrêt plus lent
+			spinSpeed += (target - spinSpeed) * k;
+			if (spinSpeed < 0.5 && target === 0) { spinSpeed = 0; return; }
+			if (spinSlot < 0) { return; }
+			discAngle[spinSlot] = (discAngle[spinSlot] + spinSpeed * dt) % 360;
+			bayEls[spinSlot].rot.style.transform = "rotate(" + discAngle[spinSlot].toFixed(1) + "deg)";
+		}
+
+		function frame(now) {
+			requestAnimationFrame(frame);
+			const dt = Math.min(0.05, (now - lastFrame) / 1000);
+			lastFrame = now;
+			updateSpin(dt);
+			if (!spectrumVisible) { return; }
+
+			const t = now / 1000;
+			let active = false;
+			for (let i = 0; i < BARS; i++) {
+				const tg = isPlayingNow ? meterTarget(i, t) : 0;
+				const k = tg > levels[i] ? 1 - Math.exp(-dt * 16) : 1 - Math.exp(-dt * 4.5);
+				levels[i] += (tg - levels[i]) * k;
+				if (levels[i] < 0.004) { levels[i] = 0; }
+				if (levels[i] > 0) { active = true; }
+			}
+			const ka = 1 - Math.exp(-dt * 3);
+			for (let c = 0; c < 3; c++) { curAccent[c] += (targetAccent[c] - curAccent[c]) * ka; }
+
+			if (active || meterWasActive || meterDirty) {
+				drawMeter();
+				meterDirty = false;
+			}
+			meterWasActive = active;
+		}
+		requestAnimationFrame(frame);
+
+		// ---------- Réglages iCUE ----------
+		function applyWidgetSettings() {
+			const num = (v, d) => (typeof v === "number" ? v : d);
+
+			document.body.dataset.finish = (typeof finish === "string" && finish) ? finish : "silver";
+
+			const rpm = num(typeof discSpeed !== "undefined" ? discSpeed : 150, 150);
+			SPIN_SPEED = Math.max(0, Math.min(600, rpm)) * 6;   // tr/min -> degrés par seconde
+
+			const wantCover = typeof glowColor === "string" && glowColor === "cover";
+			if (wantCover !== glowFromCover) {
+				glowFromCover = wantCover;
+				if (!wantCover) {
+					applyAccent(DEFAULT_ACCENT);
+				} else if (lastThumbnail) {
+					extractAccent(lastThumbnail);
+				}
+			}
+
+			spectrumVisible = typeof showSpectrum === "boolean" ? showSpectrum : true;
+			meter.style.display = spectrumVisible ? "" : "none";
+			meter.style.opacity = Math.max(0, Math.min(1, num(typeof spectrumOpacity !== "undefined" ? spectrumOpacity : 100, 100) / 100));
+			meterDirty = true;
+
+			let idlePath = "";
+			try {
+				const raw = typeof idleCover !== "undefined" && idleCover ? idleCover["pathToAsset"] : "";
+				idlePath = raw ? decodeURIComponent(raw).replace(/\\/g, "/").replace(/"/g, "%22") : "";
+			} catch (e) {
+				console.warn("Idle cover path invalid", e);
+			}
+			if (idlePath !== idleCoverPath) {
+				idleCoverPath = idlePath;
+				renderSlot(0);
+			}
+
+			relayoutMarquees();
+		}
+
+		// ---------- Couleur de la lueur ----------
+		function applyAccent(rgb) {
+			targetAccent = rgb.slice();
+			root.style.setProperty("--accent-rgb", rgb.map(Math.round).join(", "));
+			root.style.setProperty("--accent", "rgb(" + rgb.map(Math.round).join(",") + ")");
+		}
+
+		function extractAccent(url) {
+			const img = new Image();
+			img.onload = function () {
+				try {
+					const c = document.createElement("canvas");
+					c.width = c.height = 24;
+					const x = c.getContext("2d");
+					x.drawImage(img, 0, 0, 24, 24);
+					const d = x.getImageData(0, 0, 24, 24).data;
+					let r = 0, g = 0, b = 0, w = 0;
+					for (let i = 0; i < d.length; i += 4) {
+						const mx = Math.max(d[i], d[i + 1], d[i + 2]);
+						const mn = Math.min(d[i], d[i + 1], d[i + 2]);
+						const weight = (mx - mn) / 255 * (mx / 255) + 0.01; // favorise les couleurs vives
+						r += d[i] * weight; g += d[i + 1] * weight; b += d[i + 2] * weight; w += weight;
+					}
+					r /= w; g /= w; b /= w;
+					const boost = 215 / Math.max(r, g, b, 1);  // garantit une couleur lumineuse
+					applyAccent([r, g, b].map((v) => Math.min(255, Math.round(v * boost))));
+				} catch (e) {
+					console.warn("Accent extraction failed", e);
+				}
+			};
+			img.src = url;
+		}
+
+		// La pochette est celle du morceau actif : elle va sur le disque courant
+		function setArtwork(thumbnail) {
+			if (activeSlot < 0 || !slots[activeSlot]) { return; }
+			if (thumbnail) {
+				if (slots[activeSlot].thumb !== thumbnail) {
+					slots[activeSlot].thumb = thumbnail;
+					renderSlot(activeSlot);
+				}
+				if (thumbnail !== lastThumbnail) {
+					lastThumbnail = thumbnail;
+					if (glowFromCover) { extractAccent(thumbnail); }
+				}
+			} else if (!slots[activeSlot].thumb && lastThumbnail) {
+				lastThumbnail = "";
+				if (glowFromCover) { applyAccent(DEFAULT_ACCENT); }
+			}
+		}
+
+		// ---------- Transition de morceau ----------
+		function animateTrackChange(first, loadedSlot) {
+			// Le bouton fait un cinquième de tour, comme une molette qui accroche la lumière
+			knobAngle += 72;
+			root.style.setProperty("--knob-rot", knobAngle + "deg");
+
+			if (REDUCED_MOTION) { return; }
+			const ease = "cubic-bezier(0.22, 1, 0.36, 1)";
+			const slide = (el, delay) => el.animate(
+				[
+					{ opacity: 0, transform: "translateY(1vh)", filter: "blur(0.5vh)" },
+					{ opacity: 1, transform: "translateY(0)", filter: "blur(0)" }
+				],
+				{ duration: 750, delay: delay, easing: ease, fill: "backwards" }
+			);
+			slide(document.getElementById("media-title"), first ? 120 : 60);
+			slide(document.getElementById("media-subtitle"), first ? 220 : 140);
+			cdNum.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: ease, fill: "backwards" });
+
+			// Le disque se met en place en tournant, comme s'il venait d'être chargé
+			if (loadedSlot >= 0) {
+				bayEls[loadedSlot].disc.animate(
+					[
+						{ transform: "scale(0.8) rotate(-80deg)", opacity: 0 },
+						{ transform: "scale(1) rotate(0deg)", opacity: 1 }
+					],
+					{ duration: 1000, easing: ease, fill: "backwards" }
+				);
+			}
+		}
+
+		// Filet de sécurité : les signaux du plugin 1.1 déclenchent déjà les mises à jour
+		setInterval(function () {
+			if (mediaApi) {
+				updateMediaDisplay();
+			}
+		}, 20000);
+
+		// Appels optionnels : ne bloquent jamais l'affichage du titre
+		function withTimeout(promise, ms) {
+			return Promise.race([
+				promise,
+				new Promise((resolve) => setTimeout(() => resolve(undefined), ms))
+			]);
+		}
+
+		function updateExtras() {
+			if (!mediaApi) {
+				return;
+			}
+			withTimeout(mediaApi.getThumbnail().catch(() => undefined), 1500).then(setArtwork);
+
+			withTimeout(mediaApi.getIsPlaying().catch(() => undefined), 1500).then(function (isPlaying) {
+				if (isPlaying !== undefined) {
+					setPlaying(isPlaying === true || isPlaying === "true");
+				}
+			});
+		}
+
+		function updateMediaDisplay() {
+			if (
+				!window.plugins ||
+				!window.plugins.Mediadataprovider ||
+				pluginMediadataprovider_initialized === "undefined" ||
+				!pluginMediadataprovider_initialized
+			) {
+				showNoMedia();
+				return;
+			}
+			if (!mediaApi) {
+				if (typeof SimpleMediaApiWrapper === "undefined" || typeof IcueWidgetApiWrapper === "undefined") {
+					console.log("wrapper manquant: Simple=" + typeof SimpleMediaApiWrapper + " Icue=" + typeof IcueWidgetApiWrapper);
+					showNoMedia();
+					return;
+				}
+				mediaApi = new SimpleMediaApiWrapper(window.plugins.Mediadataprovider);
+			}
+
+			Promise.all([mediaApi.getSongName(), mediaApi.getArtist()])
+				.then(function ([songName, artist]) {
+					console.log("titre=[" + songName + "] artiste=[" + artist + "]");
+					if (!songName && !artist) {
+						showNoMedia();
+						return;
+					}
+					// Titre et artiste s'affichent tout de suite
+					stopClock();
+					setMarquee(document.getElementById("media-title"), songName);
+					setMarquee(document.getElementById("media-subtitle"), artist);
+					const trackKey = songName + "|" + artist;
+					if (trackKey !== lastTrackKey) {
+						const first = lastTrackKey === null;
+						lastTrackKey = trackKey;
+						setTrackRhythm(trackKey);
+						const loadedSlot = activateTrack(trackKey);
+						animateTrackChange(first, loadedSlot);
+					}
+					setPlaying(true);
+					updateExtras();
+				})
+				.catch(function (error) {
+					console.error("Error getting sensor data:", error);
+				});
+		}
+
+		function onIcueDataUpdated() {
+			if (!root) {
+				return;
+			}
+
+			if (typeof backgroundMedia === "undefined") {
+				mediaBackgroundComponent.clear();
+			} else {
+				mediaBackgroundComponent.loadMedia({
+					path: backgroundMedia["pathToAsset"],
+					baseWidth: backgroundMedia["baseWidth"],
+					baseHeight: backgroundMedia["baseHeight"],
+					scale: backgroundMedia["scale"],
+					positionX: backgroundMedia["positionX"],
+					positionY: backgroundMedia["positionY"],
+					angle: backgroundMedia["angle"]
+				});
+			}
+			const opacityValue = typeof backgroundOpacity === "number" ? backgroundOpacity : 100;
+			root.style.setProperty("--bg-opacity", Math.max(0, Math.min(100, opacityValue)) / 100);
+			applyWidgetSettings();
+			root.style.setProperty("--text-color", textColor || "#ffffff");
+			root.style.setProperty("--background-color", backgroundColor || "#ebeae6");
+		}
+
+		renderAllSlots();
+		startClock();
+		// Active les glissements une fois la position initiale posée (sinon la tête « arrive » au démarrage)
+		setTimeout(function () { document.getElementById("row").classList.add("ready"); }, 80);
+		onIcueDataUpdated();
+
+		if (iCUE_initialized) {
+			onIcueInitialized();
+		}
+
+		function onMediadataproviderInitialized() {
+			console.log("plugin media initialise: " + pluginMediadataprovider_initialized);
+			if (pluginMediadataprovider_initialized === "undefined" || !pluginMediadataprovider_initialized) {
+				return;
+			}
+			if (window.plugins.Mediadataprovider) {
+				window.plugins.Mediadataprovider.songNameChanged.connect(function () {
+					updateMediaDisplay();
+				});
+				window.plugins.Mediadataprovider.artistChanged.connect(function () {
+					updateMediaDisplay();
+				});
+				["isPlayingChanged", "thumbnailChanged", "albumChanged"].forEach(function (name) {
+					const sig = window.plugins.Mediadataprovider[name];
+					if (sig && typeof sig.connect === "function") {
+						sig.connect(function () { updateMediaDisplay(); });
+					}
+				});
+			} else {
+				console.error("MediaSession: Mediadataprovider NOT found");
+			}
+			updateMediaDisplay();
+		}
+
+		if (pluginMediadataprovider_initialized !== "undefined" && pluginMediadataprovider_initialized) {
+			onMediadataproviderInitialized();
+		}
+		</script>
+	</body>
+</html>

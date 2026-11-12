@@ -1,0 +1,23 @@
+{
+  "author": "Custom",
+  "id": "com.custom.beosound9000",
+  "name": "Beosound 9000",
+  "description": "Media widget inspired by the Bang & Olufsen Beosound 9000: six-disc changer, brushed aluminium front and a glass display",
+  "version": "2.1.0",
+  "preview_icon": "resources/beosound.svg",
+  "min_framework_version": "1.0.1",
+  "os": [
+    {
+      "platform": "windows"
+    }
+  ],
+  "supported_devices": [
+    {
+      "type": "dashboard_lcd"
+    }
+  ],
+  "interactive": true,
+  "required_plugins": [
+    "widgetbuilder.mediadataprovider:Media:1.1"
+  ]
+}

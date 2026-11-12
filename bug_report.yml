@@ -1,0 +1,44 @@
+name: Bug report
+description: Something does not look or work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected, and what you saw instead. A screenshot helps.
+    validations:
+      required: true
+  - type: input
+    id: widget
+    attributes:
+      label: Widget version
+      placeholder: "2.1.0"
+    validations:
+      required: true
+  - type: input
+    id: icue
+    attributes:
+      label: iCUE version
+      placeholder: "5.44.x"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+  - type: input
+    id: size
+    attributes:
+      label: Widget size on the XENEON EDGE
+      placeholder: "Extra Large (2536x696)"
+  - type: input
+    id: player
+    attributes:
+      label: Media player used
+      placeholder: "Spotify, Chrome + YouTube Music, ..."
+  - type: textarea
+    id: settings
+    attributes:
+      label: Non-default settings
+      description: Finish, glow colour, disc speed, background, etc.
